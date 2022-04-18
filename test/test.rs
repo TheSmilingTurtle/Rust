@@ -1,4 +1,4 @@
-fn hello()
+fn hello() -> ()
 {
     println!("Hello World!");
 }
