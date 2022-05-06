@@ -3,11 +3,19 @@ fn hello()
     println!("Hello World!");
 }
 
-fn print_num(c: u32) -> bool
+fn read_lice(slice: [i32; 2])
 {
-    println!("{}", c);
+    println!("slice.0: {}", slice[0]);
+}
 
-    true
+fn print_num(c: u32) -> Option<bool>
+{
+    if c != 5 {
+        println!("{}", c);
+        Some(true)
+    }else{
+        None
+    }
 }
 
 #[derive(Debug)]
@@ -18,9 +26,14 @@ struct MyStruct {
 
 fn main()
 {
-    let c;
-    c = 1_000_000u32;
+    let mut c = 1_000_000;
+    c = 2; //should throw an error, not anymore
     hello();
-    println!("{}", print_num(c));
-    println!("{:?}", MyStruct{my_num1: 32,my_num2: 14});
+    if print_num(c) == None{
+        println!("None");
+    }
+    println!("{:?}", MyStruct{my_num1: 32,my_num2: c as i16});
+
+    let g: [i32; 2] = [4, 5];
+    read_lice(g);
 }
