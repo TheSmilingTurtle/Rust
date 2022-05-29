@@ -20,12 +20,10 @@ fn main() {
     for i in 0..lim{
         let jump = dirty_vec[i];
 
-        if jump == 0{
-            continue;
-        }
-
-        for j in 1..(number/jump as usize){
-            dirty_vec[i + j*jump] = 0;
+        if jump != 0{
+            for j in ((i+jump)..(number-1)).step_by(jump){
+                dirty_vec[j] = 0;
+            }
         }
     }
 

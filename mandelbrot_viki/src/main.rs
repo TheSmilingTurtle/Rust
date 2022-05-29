@@ -94,7 +94,6 @@ fn write_image(filename : &str, pixels : &[u8], bounds : (usize, usize)) -> Resu
 }
 
 fn main() {
-    println!("Doing some stuff, don't mind me...");
 
     let args : Vec<String> = env::args().collect();
 
@@ -113,4 +112,6 @@ fn main() {
      render(&mut pixels, bounds, upper_left, lower_right);
 
      write_image(&args[1], &pixels, bounds).expect("error writing PNG file");
+
+     println!("Done");
 }
