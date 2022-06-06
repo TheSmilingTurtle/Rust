@@ -23,11 +23,11 @@ fn main() -> Result<(), String> {
     let objects: Vec<Objects> = vec![
         Objects::Sphere(
             Sphere::new(
-                Vector::new(70.0, 40., 20.),
+                Vector::new(90., 0., 0.),
                 50.0,
-                true
+                |obj, pos| obj.dist(pos) + 2.*(obj.surf(pos).y/2.).sin() //+ 2.*(obj.surf(pos).z/2.).sin()
             )
-        ),
+        )/*,
         Objects::Line(
             Line::new(
                 Vector::new(70.0, -30.0, 0.0),
@@ -35,9 +35,11 @@ fn main() -> Result<(), String> {
                 30.0,
                 true
             )
-        )
+        )*/
     ];
-    println!("{:#?}", objects);
+
+    //println!("{:#?}", objects);
+    
     match camera.render(objects) {
         Ok(_) => (),
         Err(err) => panic!("Error occured in render: {:?}", err)

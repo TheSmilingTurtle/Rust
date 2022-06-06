@@ -78,7 +78,7 @@ impl Camera {
             row: usize, 
             col: usize
         ) -> (Vector, Vector){  //FIXME: only works for normal = (1, 0, 0) and centre = (0, 0, 0)
-        (self.top_left - Vector::new(0.0, row as f64, col as f64)*self.pixel_dist, self.normal) //for simpler future integration of lese effects
+        (self.top_left - Vector::new(0.0, row as f64, col as f64)*self.pixel_dist, self.normal) //for simpler future integration of lens effects
     }
 
     fn march(
@@ -101,7 +101,7 @@ impl Camera {
                 _ => return Some(new_pos.dist(pos))
             }
 
-            _count += 1;
+            //_count += 1;
         }
     }    
     

@@ -10,7 +10,7 @@ pub struct Line {
 
     radius: f64,
 
-    dominance: bool
+    _dominance: bool
 }
 
 impl Line {
@@ -26,7 +26,7 @@ impl Line {
             ab: (b - a).to_normed(),
             len: (b - a).norm(),
             radius: radius,
-            dominance: dominance,
+            _dominance: dominance,
         }
     }
 

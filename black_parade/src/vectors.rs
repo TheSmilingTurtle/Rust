@@ -2,9 +2,9 @@ use std::ops::{Add, Sub, Neg, Mul, Div};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vector {
-    x: f64,
-    y: f64,
-    z: f64
+    pub x: f64,
+    pub y: f64,
+    pub z: f64
 }
 
 #[allow(dead_code)]
