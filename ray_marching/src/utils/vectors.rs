@@ -1,5 +1,5 @@
 use std::ops::{Add, Sub, Mul, Div, Neg};
-//use std::cmp::{max, min};
+use std::fmt::{Display, Formatter, Result};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vector {
@@ -18,13 +18,18 @@ impl Vector {
         }
     }
 
-    pub fn to_string(self) -> String { format!("({}, {}, {})", self.x, self.y, self.z) }
-
     pub fn norm(self) -> f64 { (self * self).sqrt() }
 
-    pub fn dist(self, vec: Vector) -> f64 { (self - vec).norm() }
+    pub fn dist(self, vec: &Vector) -> f64 { (self - *vec).norm() }
 
     pub fn to_normed(self) -> Vector { self/self.norm() }
+
+    pub fn cross(self, vec: Vector) -> Vector { Vector::new(
+        self.y * vec.z - self.z * vec.y,
+        self.z * vec.x - self.x * vec.z,
+        self.x * vec.y - self.y * vec.x
+        )
+    }
 }
 
 impl<T> Mul<T> for Vector 
@@ -63,18 +68,18 @@ impl Mul<Vector> for f64 {
     }
 }
 
-impl Mul<Vector> for i64 {
+impl Mul<Vector> for i32 {
     type Output = Vector;
 
     fn mul(self, vec: Vector) -> Vector {
-        let c: f64 = self as f64; 
+        let c: f64 = f64::from(self); 
         vec * c
     }
 }
 
 impl Mul<Vector> for Vector {
     type Output = f64;
-    fn mul(self, v: Vector) -> f64 { self.x * v.x + self.y * v.y + self.z + v.z }
+    fn mul(self, v: Vector) -> f64 { self.x * v.x + self.y * v.y + self.z * v.z }
 }
 
 impl Add<Vector> for Vector {
@@ -109,6 +114,9 @@ impl PartialEq for Vector {
     fn eq(&self, &vec: &Vector) -> bool {
         self.x == vec.x && self.y == vec.y && self.z == vec.z
     }
-
-    fn ne(&self, other: &Vector) -> bool { !(self == other) }
+}
+impl Display for Vector {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "({}, {}, {})", self.x, self.y, self.z)
+    }
 }

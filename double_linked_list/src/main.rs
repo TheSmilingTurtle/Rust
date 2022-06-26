@@ -10,30 +10,19 @@ impl List{
         Nil
     }
 
-    fn prepend(self, elem: u32) -> List {
-        Cont(Box::new(List::new()), elem, Box::new(self))
-    }
+    fn append(mut self, item: u32) -> List {
+        let new_item = Cont(
+            Box::new(self),
+            item,
+            Box::new(Nil)
+        );
 
-    fn append(self, elem: u32) -> List {
-        let mut temp = Cont( Box::new(List::new()) , elem, Box::new(List::new()) );
-
-        temp = temp.change_tail(self);
-
-        temp
-    }
-
-    fn change_tail(self, list: List) -> List {
         match self {
-            Cont(head , elem, _) => Cont(head, elem, Box::new(list)),
-            Nil => List::new()
+            Cont(.., ref mut tail) => *tail = Box::new(new_item),
+            _ => {}
         }
-    }
-
-    fn change_head(self, list: List) -> Box<List> {
-        match self {
-            Cont(_, elem, tail) => Box::new(Cont(Box::new(list), elem, tail)),
-            Nil => Box::new(List::new())
-        }
+        
+        new_item
     }
 
     fn to_string(self) -> String {

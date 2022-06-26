@@ -1,15 +1,16 @@
-use crate::objects::Object;
+//use crate::scene::objects::objects::Objects;
 
-trait Ray {
+pub trait Ray {
     /* Trait for calculating light rays to and/or from the light*/
 }
 
-enum Lights<T> 
+pub enum Lights<T> 
 where T: Ray {
     Light(T),
     None
 }
 
-impl Ray for Lights {
+impl<T> Ray for Lights<T> 
+where T: Ray {
     /* Needs implementation */
 }
