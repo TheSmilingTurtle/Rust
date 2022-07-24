@@ -6,7 +6,7 @@ pub struct Sphere {
     pub centre: Vector,
     pub radius: f64,
 
-    pub strf: fn(Sphere, Vector) -> f64
+    pub strf: fn(&Sphere, Vector) -> f64
 }
 
 impl Sphere {
@@ -21,12 +21,15 @@ impl Sphere {
 }
 
 impl Sdf for Sphere {
+    fn surf(&self, pos: Vector) -> Vector {
+        pos + (self.centre - pos).to_normed() * self.sdf(pos)
+    }
 
-    fn sdf(&self, pos: &Vector) -> f64 {
+    fn dist(&self, pos: Vector) -> f64 {
         self.centre.dist(pos) - self.radius
     }
 
-    fn surf(&self, pos: &Vector) -> Vector {
-        *pos + (self.centre - *pos).to_normed() * self.sdf(pos)
+    fn sdf(&self, pos: Vector) -> f64 {
+        self.dist(pos) + (self.strf)(self, pos)
     }
 }

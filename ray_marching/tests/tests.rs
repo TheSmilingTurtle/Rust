@@ -101,7 +101,7 @@ mod vector_tests {
             0
         );
 
-        assert_eq!(a.dist(&b), 1.);
+        assert_eq!(a.dist(b), 1.);
     }
 
     #[test]

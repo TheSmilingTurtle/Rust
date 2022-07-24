@@ -20,7 +20,7 @@ impl Vector {
 
     pub fn norm(self) -> f64 { (self * self).sqrt() }
 
-    pub fn dist(self, vec: &Vector) -> f64 { (self - *vec).norm() }
+    pub fn dist(self, vec: Vector) -> f64 { (self - vec).norm() }
 
     pub fn to_normed(self) -> Vector { self/self.norm() }
 
