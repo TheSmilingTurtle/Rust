@@ -1,4 +1,4 @@
-use num::Complex;
+use num::complex::Complex;
 
 mod utils {
     use image::ColorType;
@@ -60,13 +60,6 @@ mod utils {
                 width:  br.re - tl.re
             }
         }
-        /*
-        pub fn point_to_pixel(&self, point: Complex<f64>, canvas: &Picture) -> (usize, usize) {
-            (
-                ((point.re - self.top_left.re) / (canvas.bounds.0 as f64)) as usize,
-                ((self.top_left.im - point.im) / (canvas.bounds.1 as f64)) as usize
-            )
-        }*/
 
         pub fn pixel_to_point(&self, pixel: (usize, usize), canvas: &Picture) -> Complex<f64> {
             self.top_left + Complex::<f64>::new(
@@ -77,15 +70,32 @@ mod utils {
 
     }
 
-    pub fn complex_round(num: Complex<f64>) -> Complex<f64> {
-        let decimals = 2usize;
-        let y = 10usize.pow(decimals as u32) as f64;
-
+    pub fn complex_round(num: Complex<f64>) -> Complex<isize> {
+        //technically does not round the number, but just multiplies it by the digits and truncates the rest
+        
+        let mul: f64 = 100.; //for it to act as actual rounding, this needs to be a power of ten
+        
         Complex::new(
-            (num.re * y).round() / y,
-            (num.im * y).round() / y
+            (num.re * mul) as isize,
+            (num.im * mul) as isize
         )
         
+    }
+
+    pub fn parse_complex(s: &str) -> Option<Complex<f64>> {
+        match s.find("+") {
+            Some(i) => match (s[..i].parse::<f64>(), s[i + 1..].parse::<f64>()) {
+                            (Ok(re), Ok(im)) => Some(Complex::new(re, im)),
+                            _ => None
+                        }
+            None    => match s.find("-") {
+                        Some(i) => match (s[..i].parse::<f64>(), s[i + 1..].parse::<f64>()) {
+                                        (Ok(re), Ok(im)) => Some(Complex::new(re, -im)),
+                                        _ => None
+                                    }
+                        None    => None
+            }
+        }
     }
 
 }
@@ -93,9 +103,11 @@ mod utils {
 fn convergence_calculator(lamb: Complex<f64>) -> Option<u8> {
     let one = Complex::<f64>::new(1., 0.);
 
-    let mut last_element = Complex::<f64>::new(0.2, 0.);
+    let mut last_element = Complex::<f64>::new(0.5, 0.);
 
-    let mut repetition_vec: Vec<Complex<f64>> = vec![utils::complex_round(last_element)];
+    let mut repetition_vec = std::collections::HashSet::new();
+
+    repetition_vec.insert(utils::complex_round(last_element));
 
     for _ in 0..255 {
         last_element = lamb*last_element*(one-last_element);
@@ -104,37 +116,45 @@ fn convergence_calculator(lamb: Complex<f64>) -> Option<u8> {
             return None;
         }
 
-        if repetition_vec.contains(&utils::complex_round(last_element)) {
+        let rounded = utils::complex_round(last_element);
+
+        if repetition_vec.contains(&rounded) {
             return Some((repetition_vec.len() + 1) as u8)
         }
 
-        repetition_vec.push(utils::complex_round(last_element));
+        repetition_vec.insert(rounded);
     }
 
     None
 }
 
 fn main() -> Result<(), std::io::Error>{
+    let args: Vec<String> = std::env::args().collect();
+
+    let top_left = utils::parse_complex(&args[1][..(args[1].len() - 1)]).unwrap();
+
+    let bottom_right = utils::parse_complex(&args[2][..(args[2].len() -1)]).unwrap();
+
+    let precision = args[3].parse::<usize>().unwrap(); //does not actually represent amount of divisions
+
     let grid = utils::Grid::new(
-        Complex::new(
-            -2.1, 1.2
-        ),
-        Complex::new(
-            4.1, -1.2
-        )
+        top_left,
+        bottom_right
     );
 
     let mut canvas = utils::Picture::new(
-        31 * 100,
-        12 * 100
+        ((bottom_right.re-top_left.re) * precision as f64) as usize,
+        ((top_left.im-bottom_right.im) * precision as f64) as usize
     );
 
     for i in 0..canvas.bounds.0 {
         for j in 0..canvas.bounds.1 {
             match convergence_calculator(
-                grid.pixel_to_point(
-                    (i, j), 
-                    &canvas))
+                    grid.pixel_to_point(
+                        (i, j), 
+                        &canvas
+                    )
+                )
             {
                 Some(x) => canvas.paint_pixel((i, j), x)?,
                 None    => ()
