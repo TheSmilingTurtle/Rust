@@ -1,8 +1,6 @@
-use prelude::Colour;
-
-mod colour;
-mod error;
-mod picture;
+pub mod colour;
+pub mod error;
+pub mod picture;
 
 pub mod prelude {
     pub use crate::colour::{Colour, Rgb8, G8};

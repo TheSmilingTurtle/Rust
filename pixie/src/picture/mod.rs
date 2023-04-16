@@ -9,8 +9,8 @@ use image::ColorType;
 
 #[derive(Debug)]
 pub struct Picture {
-    bounds: (usize, usize),
-    pixels: Vec<Colour>,
+    pub bounds: (usize, usize),
+    pub pixels: Vec<Colour>,
 }
 
 impl Picture {
@@ -18,7 +18,7 @@ impl Picture {
         PictureBuilder::new()
     }
 
-    pub fn save(self, path: &str) -> Result<Self, Error> {
+    pub fn save(&self, path: &str) -> Result<&Self, Error> {
         let buf = self
             .pixels
             .iter()
@@ -38,7 +38,7 @@ impl Picture {
 
         match res {
             Ok(_) => Ok(self),
-            Err(e) => Err(Error::SaveFailed),
+            Err(_) => Err(Error::SaveFailed),
         }
     }
 }

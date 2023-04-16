@@ -5,8 +5,8 @@ use super::Picture;
 
 #[derive(Debug)]
 pub struct PictureBuilder {
-    bounds: Option<(usize, usize)>,
-    function: Option<fn(usize, usize) -> Colour>,
+    pub bounds: Option<(usize, usize)>,
+    pub function: Option<fn(usize, usize) -> Colour>,
 }
 
 impl PictureBuilder {
