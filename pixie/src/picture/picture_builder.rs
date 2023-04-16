@@ -3,6 +3,7 @@ use crate::picture::Colour;
 
 use super::Picture;
 
+#[derive(Debug)]
 pub struct PictureBuilder {
     bounds: Option<(usize, usize)>,
     function: Option<fn(usize, usize) -> Colour>,
@@ -34,8 +35,8 @@ impl PictureBuilder {
 
     pub fn from_fn_par(
         self,
-        thread_count: usize,
         function: fn(usize, usize) -> Colour,
+        thread_count: usize,
     ) -> Result<Picture, Error> {
         self.add_fn(function).calculate_par(thread_count)
     }
@@ -52,7 +53,7 @@ impl PictureBuilder {
 
                 for i in 0..bounds.0 {
                     for j in 0..bounds.1 {
-                        temp.pixels[bounds.0 * j + i] = function(i, j);
+                        temp.pixels.push(function(i, j));
                     }
                 }
 
@@ -77,28 +78,43 @@ impl PictureBuilder {
 
                 std::thread::scope(|s| {
                     let length = (bounds.0 / thread_count).clamp(1, bounds.0);
-                    let mut thread_vec: Vec<std::thread::ScopedJoinHandle<Vec<Colour>>> =
-                        Vec::with_capacity(thread_count);
+                    let mut thread_vec: Vec<std::thread::ScopedJoinHandle<Vec<Colour>>> = Vec::with_capacity(thread_count);
 
                     for start in 0..thread_count {
                         thread_vec.push(s.spawn(move || {
-                            let mut temp: Vec<Colour> = Vec::with_capacity(length * bounds.1);
+                            let mut t: Vec<Colour> = Vec::with_capacity(length * bounds.1);
 
                             for i in (start * length)..((start + 1) * length) {
                                 for j in 0..bounds.1 {
-                                    temp[bounds.0 * j + i] = function(i, j);
+                                    t.push(function(i, j));
                                 }
                             }
 
-                            temp
+                            t
                         }));
                     }
+
+                    thread_vec.push(s.spawn(move || {
+                        let mut t: Vec<Colour> = Vec::with_capacity(length * bounds.1);
+
+                        for i in (thread_count*length)..(bounds.0) {
+                            for j in 0..bounds.1 {
+                                t.push(function(i, j));
+                            }
+                        }
+
+                        t
+                    }));
+
 
                     temp.pixels = thread_vec
                         .into_iter()
                         .flat_map(|a| a.join().unwrap())
                         .collect::<Vec<_>>()
                 });
+
+                println!("length: {}", temp.pixels.len());
+
 
                 Ok(temp)
             }

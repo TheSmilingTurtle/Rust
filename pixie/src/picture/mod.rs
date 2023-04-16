@@ -1,12 +1,13 @@
 mod picture_builder;
 
-use super::colour::Colour;
+use crate::colour::Colour;
 use crate::error::Error;
 pub use picture_builder::PictureBuilder;
 
 use image::save_buffer;
 use image::ColorType;
 
+#[derive(Debug)]
 pub struct Picture {
     bounds: (usize, usize),
     pixels: Vec<Colour>,
@@ -17,7 +18,7 @@ impl Picture {
         PictureBuilder::new()
     }
 
-    pub fn save(self, path: String) -> Result<Self, Error> {
+    pub fn save(self, path: &str) -> Result<Self, Error> {
         let buf = self
             .pixels
             .iter()
@@ -29,12 +30,15 @@ impl Picture {
             &buf,
             self.bounds.0 as u32,
             self.bounds.1 as u32,
-            ColorType::Rgb8,
+            match self.pixels[0] {
+                Colour::Grey(_) => ColorType::L8,
+                Colour::Rgb(_) => ColorType::Rgb8,
+            },
         );
 
         match res {
             Ok(_) => Ok(self),
-            Err(_) => Err(Error::SaveFailed),
+            Err(e) => Err(Error::SaveFailed),
         }
     }
 }
