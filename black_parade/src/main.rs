@@ -25,13 +25,13 @@ fn main() -> Result<(), String> {
             Sphere::new(
                 Vector::new(90., 0., 0.),
                 50.0,
-                |obj, pos| obj.dist(pos) + 2.*(obj.surf(pos).y/2.).sin() //+ 2.*(obj.surf(pos).z/2.).sin()
+                |obj, pos| obj.dist(pos) + 2.*(obj.surf(pos).y/2.).sin() + 2.*(obj.surf(pos).z/2.).sin()
             )
-        )/*,
+        ),/*
         Objects::Line(
             Line::new(
                 Vector::new(70.0, -30.0, 0.0),
-                Vector::new(100.0, 0.0, 20.0),
+                Vector::new(120.0, 10.0, 20.0),
                 30.0,
                 true
             )

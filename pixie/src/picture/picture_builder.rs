@@ -16,31 +16,31 @@ impl PictureBuilder {
         }
     }
 
-    fn bounds(mut self, x: usize, y: usize) -> Self {
+    pub fn bounds(mut self, x: usize, y: usize) -> Self {
         self.bounds = Some((x, y));
 
         self
     }
 
-    fn add_fn(mut self, function: fn(usize, usize) -> Colour) -> Self {
+    pub fn add_fn(mut self, function: fn(usize, usize) -> Colour) -> Self {
         self.function = Some(function);
 
         self
     }
 
-    fn from_fn(mut self, function: fn(usize, usize) -> Colour) -> Result<Picture, Error> {
+    pub fn from_fn(self, function: fn(usize, usize) -> Colour) -> Result<Picture, Error> {
         self.add_fn(function).calculate()
     }
 
-    fn from_fn_par(
-        mut self,
+    pub fn from_fn_par(
+        self,
         thread_count: usize,
         function: fn(usize, usize) -> Colour,
     ) -> Result<Picture, Error> {
         self.add_fn(function).calculate_par(thread_count)
     }
 
-    fn calculate(self) -> Result<Picture, Error> {
+    pub fn calculate(self) -> Result<Picture, Error> {
         match (self.bounds, self.function) {
             (None, _) => return Err(Error::NoBounds),
             (_, None) => return Err(Error::NoFunction),
@@ -61,19 +61,19 @@ impl PictureBuilder {
         }
     }
 
-    fn calculate_par(&self, thread_count: usize) -> Result<Picture, Error> {
+    pub fn calculate_par(&self, thread_count: usize) -> Result<Picture, Error> {
         match (self.bounds, self.function) {
             (None, _) => return Err(Error::NoBounds),
             (_, None) => return Err(Error::NoFunction),
             (Some(bounds), Some(function)) => {
-                let res;
+                let mut res = vec![];
 
                 std::thread::scope(|s| {
                     let length = std::cmp::max(1, bounds.0 / thread_count);
-                    let mut thread_vec: Vec<std::thread::ScopedJoinHandle<Vec<Colour>>>;
+                    let mut thread_vec: Vec<std::thread::ScopedJoinHandle<Vec<Colour>>> = vec![];
 
                     for start in (0..thread_count).step_by(length) {
-                        thread_vec.push(s.spawn(|| {
+                        thread_vec.push(s.spawn(move || {
                             let mut temp: Vec<Colour> = Vec::with_capacity(length * bounds.1);
 
                             for i in start..(start + length) {
@@ -88,18 +88,16 @@ impl PictureBuilder {
 
                     res = thread_vec
                         .into_iter()
-                        .map(|a| a.join())
-                        .collect::<Result<Vec<_>, _>>()
+                        .map(|a| a.join().unwrap())
+                        .flatten()
+                        .collect::<Vec<_>>()
                 });
 
-                match res {
-                    Ok(out) => Ok(Picture {
-                        bounds: bounds,
-                        pixels: out.into_iter().flatten().collect(),
-                    }),
-                    Err(_) => Err(Error::ThreadPaniced)
+                Ok(Picture{
+                    bounds: bounds,
+                    pixels: res
+                })
                 }
             }
-        }
     }
 }

@@ -2,6 +2,11 @@ mod colour;
 mod error;
 mod picture;
 
+mod prelude {
+    pub use crate::colour::{Colour, G8, Rgb8};
+    pub use crate::picture::{Picture};
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
