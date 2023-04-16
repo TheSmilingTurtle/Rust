@@ -53,7 +53,7 @@ impl PictureBuilder {
 
                 for i in 0..bounds.0 {
                     for j in 0..bounds.1 {
-                        temp.pixels.push(function(i, j));
+                        temp.pixels.push(function(j, i));
                     }
                 }
 
@@ -86,7 +86,7 @@ impl PictureBuilder {
 
                             for i in (start * length)..((start + 1) * length) {
                                 for j in 0..bounds.1 {
-                                    t.push(function(i, j));
+                                    t.push(function(j, i));
                                 }
                             }
 
@@ -100,7 +100,7 @@ impl PictureBuilder {
 
                             for i in (thread_count*length)..(bounds.0) {
                                 for j in 0..bounds.1 {
-                                    t.push(function(i, j));
+                                    t.push(function(j, i));
                                 }
                             }
 
