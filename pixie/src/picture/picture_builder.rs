@@ -90,25 +90,23 @@ impl PictureBuilder {
                                 }
                             }
 
-                            println!("completed: {:?}", (start * length)..((start + 1) * length));
-
                             t
                         }));
                     }
 
-                    thread_vec.push(s.spawn(move || {
-                        let mut t: Vec<Colour> = Vec::with_capacity(length * bounds.1);
+                    if thread_count*length < bounds.0 {
+                        thread_vec.push(s.spawn(move || {
+                            let mut t: Vec<Colour> = Vec::with_capacity(length * bounds.1);
 
-                        for i in (thread_count*length)..(bounds.0) {
-                            for j in 0..bounds.1 {
-                                t.push(function(i, j));
+                            for i in (thread_count*length)..(bounds.0) {
+                                for j in 0..bounds.1 {
+                                    t.push(function(i, j));
+                                }
                             }
-                        }
 
-                        println!("completed: {:?}", (thread_count*length)..(bounds.0));
-
-                        t
-                    }));
+                            t
+                        }));
+                    }
 
 
                     temp.pixels = thread_vec

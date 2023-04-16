@@ -42,7 +42,7 @@ mod tests {
         }
         
         Picture::build()
-            .bounds(1000, 1000)
+            .bounds(1001, 1001)
             .from_fn_par(circle_generator, 4)?
             .save("circle.png")?;
         
@@ -56,13 +56,13 @@ mod tests {
         Picture::build()
             .bounds(1000, 1000)
             .from_fn_par(|x, y|
-                if (x as isize - 500).pow(2) + (y as isize - 500).pow(2) <= 500isize.pow(2) + 1 {
+                if (x as isize - 500).pow(2) + (y as isize - 500).pow(2) <= 499isize.pow(2) {
                     Colour::new("Grey", vec![0]).unwrap()
                 }
                 else {
                     Colour::new("Grey", vec![255]).unwrap()
                 },
-                4)?
+                100)?
             .save("circle_closure.png")?;
         
         Ok(())
