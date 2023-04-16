@@ -4,10 +4,11 @@ mod colour;
 mod error;
 mod picture;
 
-mod prelude {
+pub mod prelude {
     pub use crate::colour::{Colour, Rgb8, G8};
     pub use crate::picture::Picture;
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -21,10 +22,10 @@ mod tests {
             Colour::new("Rgb", vec![thread_rng().gen_range(0..255), thread_rng().gen_range(0..255), thread_rng().gen_range(0..255)]).unwrap()
         }
         
-        let pic = Picture::build()
-                                .bounds(100, 100)
-                                .from_fn_par(test_generator, 4)?
-                                .save("random.png")?;
+        Picture::build()
+            .bounds(100, 100)
+            .from_fn_par(test_generator, 4)?
+            .save("random.png")?;
 
         Ok(())
     }
