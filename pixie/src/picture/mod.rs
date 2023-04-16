@@ -1,7 +1,7 @@
 mod picture_builder;
 
-use crate::error::Error;
 use super::colour::Colour;
+use crate::error::Error;
 pub use picture_builder::PictureBuilder;
 
 use image::save_buffer;
@@ -18,13 +18,24 @@ impl Picture {
     }
 
     pub fn save(self: Self, path: String) -> Result<Self, Error> {
-        let buf = self.pixels.iter().map(|x| x.to_vec()).flatten().collect::<Vec<_>>();
+        let buf = self
+            .pixels
+            .iter()
+            .map(|x| x.to_vec())
+            .flatten()
+            .collect::<Vec<_>>();
 
-        let res = save_buffer(path, &buf, self.bounds.0 as u32, self.bounds.1 as u32, ColorType::Rgb8);
+        let res = save_buffer(
+            path,
+            &buf,
+            self.bounds.0 as u32,
+            self.bounds.1 as u32,
+            ColorType::Rgb8,
+        );
 
         match res {
             Ok(_) => Ok(self),
-            Err(_) => Err(Error::SaveFailed)
-        }   
+            Err(_) => Err(Error::SaveFailed),
+        }
     }
 }

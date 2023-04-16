@@ -4,7 +4,7 @@ pub struct G8 {
 }
 
 impl G8 {
-    pub fn to_vec(self: Self) -> Vec<u8>{
+    pub fn to_vec(self: Self) -> Vec<u8> {
         vec![self.value]
     }
 }

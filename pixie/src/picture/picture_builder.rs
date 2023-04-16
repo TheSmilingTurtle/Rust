@@ -69,14 +69,14 @@ impl PictureBuilder {
                 let mut res = vec![];
 
                 std::thread::scope(|s| {
-                    let length = std::cmp::max(1, bounds.0 / thread_count);
+                    let length = std::cmp::min(bounds.0, std::cmp::max(1, bounds.0 / thread_count));
                     let mut thread_vec: Vec<std::thread::ScopedJoinHandle<Vec<Colour>>> = vec![];
 
-                    for start in (0..thread_count).step_by(length) {
+                    for start in 0..thread_count {
                         thread_vec.push(s.spawn(move || {
                             let mut temp: Vec<Colour> = Vec::with_capacity(length * bounds.1);
 
-                            for i in start..(start + length) {
+                            for i in (start * length)..((start + 1) * length) {
                                 for j in 0..bounds.1 {
                                     temp[bounds.0 * j + i] = function(i, j);
                                 }
@@ -93,11 +93,11 @@ impl PictureBuilder {
                         .collect::<Vec<_>>()
                 });
 
-                Ok(Picture{
+                Ok(Picture {
                     bounds: bounds,
-                    pixels: res
+                    pixels: res,
                 })
-                }
             }
+        }
     }
 }
