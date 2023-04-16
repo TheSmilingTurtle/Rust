@@ -90,6 +90,8 @@ impl PictureBuilder {
                                 }
                             }
 
+                            println!("completed: {:?}", (start * length)..((start + 1) * length));
+
                             t
                         }));
                     }
@@ -103,6 +105,8 @@ impl PictureBuilder {
                             }
                         }
 
+                        println!("completed: {:?}", (thread_count*length)..(bounds.0));
+
                         t
                     }));
 
@@ -112,9 +116,6 @@ impl PictureBuilder {
                         .flat_map(|a| a.join().unwrap())
                         .collect::<Vec<_>>()
                 });
-
-                println!("length: {}", temp.pixels.len());
-
 
                 Ok(temp)
             }

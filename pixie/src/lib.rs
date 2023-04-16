@@ -63,7 +63,7 @@ mod tests {
                     Colour::new("Grey", vec![255]).unwrap()
                 },
                 4)?
-            .save("circle.png")?;
+            .save("circle_closure.png")?;
         
         Ok(())
     }
@@ -73,15 +73,10 @@ mod tests {
 
         Picture::build()
             .bounds(1000, 1000)
-            .from_fn_par(|x, y|
-                if (x as isize - 500).pow(2) + (y as isize - 500).pow(2) <= 500isize.pow(2) + 1 {
-                    Colour::new("Grey", vec![0]).unwrap()
-                }
-                else {
-                    Colour::new("Grey", vec![255]).unwrap()
-                },
-                4)?
-            .save("circle.png")?;
+            .from_fn_par(|x, _|
+                    Colour::new("Rgb", vec![(( (x as f64 / 500.).sin() * 255.) as u8), (( (x as f64 / 250.).sin() * 255.) as u8), (( (x as f64 / 125.).sin() * 255.) as u8)]).unwrap()
+                ,6)?
+            .save("sin.png")?;
         
         Ok(())
     }
