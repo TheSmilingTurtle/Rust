@@ -42,11 +42,11 @@ impl PictureBuilder {
 
     pub fn calculate(self) -> Result<Picture, Error> {
         match (self.bounds, self.function) {
-            (None, _) => return Err(Error::NoBounds),
-            (_, None) => return Err(Error::NoFunction),
+            (None, _) => Err(Error::NoBounds),
+            (_, None) => Err(Error::NoFunction),
             (Some(bounds), Some(function)) => {
                 let mut temp: Picture = Picture {
-                    bounds: bounds,
+                    bounds,
                     pixels: Vec::with_capacity(bounds.0 * bounds.1),
                 };
 
@@ -61,16 +61,24 @@ impl PictureBuilder {
         }
     }
 
-    pub fn calculate_par(&self, thread_count: usize) -> Result<Picture, Error> {
+    pub fn calculate_par(self, thread_count: usize) -> Result<Picture, Error> {
         match (self.bounds, self.function) {
-            (None, _) => return Err(Error::NoBounds),
-            (_, None) => return Err(Error::NoFunction),
+            (None, _) => Err(Error::NoBounds),
+            (_, None) => Err(Error::NoFunction),
             (Some(bounds), Some(function)) => {
-                let mut res = vec![];
+                let mut temp: Picture = Picture {
+                    bounds,
+                    pixels: Vec::with_capacity(bounds.0 * bounds.1),
+                };
+
+                if thread_count == 0 {
+                    return Err(Error::ZeroThreads);
+                }
 
                 std::thread::scope(|s| {
-                    let length = std::cmp::min(bounds.0, std::cmp::max(1, bounds.0 / thread_count));
-                    let mut thread_vec: Vec<std::thread::ScopedJoinHandle<Vec<Colour>>> = vec![];
+                    let length = (bounds.0 / thread_count).clamp(1, bounds.0);
+                    let mut thread_vec: Vec<std::thread::ScopedJoinHandle<Vec<Colour>>> =
+                        Vec::with_capacity(thread_count);
 
                     for start in 0..thread_count {
                         thread_vec.push(s.spawn(move || {
@@ -86,17 +94,13 @@ impl PictureBuilder {
                         }));
                     }
 
-                    res = thread_vec
+                    temp.pixels = thread_vec
                         .into_iter()
-                        .map(|a| a.join().unwrap())
-                        .flatten()
+                        .flat_map(|a| a.join().unwrap())
                         .collect::<Vec<_>>()
                 });
 
-                Ok(Picture {
-                    bounds: bounds,
-                    pixels: res,
-                })
+                Ok(temp)
             }
         }
     }

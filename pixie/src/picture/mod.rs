@@ -13,16 +13,15 @@ pub struct Picture {
 }
 
 impl Picture {
-    pub fn new() -> PictureBuilder {
+    pub fn build() -> PictureBuilder {
         PictureBuilder::new()
     }
 
-    pub fn save(self: Self, path: String) -> Result<Self, Error> {
+    pub fn save(self, path: String) -> Result<Self, Error> {
         let buf = self
             .pixels
             .iter()
-            .map(|x| x.to_vec())
-            .flatten()
+            .flat_map(|x| x.to_vec())
             .collect::<Vec<_>>();
 
         let res = save_buffer(
