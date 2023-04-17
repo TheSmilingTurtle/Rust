@@ -3,7 +3,6 @@ use crate::picture::Colour;
 
 use super::Picture;
 
-#[derive(Debug)]
 pub struct PictureBuilder {
     pub bounds: Option<(usize, usize)>,
     pub function: Option<fn(usize, usize) -> Colour>,
@@ -41,36 +40,41 @@ impl PictureBuilder {
         self.add_fn(function).calculate_par(thread_count)
     }
 
-    pub fn calculate(self) -> Result<Picture, Error> {
+    fn calculate_range(&self, range: (usize, usize)) -> Result<Vec<Colour>, Error> {
         match (self.bounds, self.function) {
             (None, _) => Err(Error::NoBounds),
             (_, None) => Err(Error::NoFunction),
             (Some(bounds), Some(function)) => {
-                let mut temp: Picture = Picture {
-                    bounds,
-                    pixels: Vec::with_capacity(bounds.0 * bounds.1),
-                };
+                let mut temp = Vec::with_capacity((range.1 - range.0) * bounds.1);
 
-                for i in 0..bounds.0 {
+                for i in range.0..range.1 {
                     for j in 0..bounds.1 {
-                        temp.pixels.push(function(j, i));
+                        temp.push(function(j, i));
                     }
                 }
 
                 Ok(temp)
             }
         }
+
     }
 
-    pub fn calculate_par(self, thread_count: usize) -> Result<Picture, Error> {
+    pub fn calculate(self) -> Result<Picture, Error> {
+        match self.bounds {
+                Some(bounds) => Ok( Picture {
+                        bounds,
+                        pixels: self.calculate_range((0,bounds.0))?,
+                        }),
+                None => Err(Error::NoBounds)
+        }
+    }
+
+    pub fn calculate_par(&self, thread_count: usize) -> Result<Picture, Error> {
         match (self.bounds, self.function) {
             (None, _) => Err(Error::NoBounds),
             (_, None) => Err(Error::NoFunction),
-            (Some(bounds), Some(function)) => {
-                let mut temp: Picture = Picture {
-                    bounds,
-                    pixels: Vec::with_capacity(bounds.0 * bounds.1),
-                };
+            (Some(bounds), Some(_)) => {
+                let mut temp = Vec::with_capacity(bounds.0*bounds.1);
 
                 if thread_count == 0 {
                     return Err(Error::ZeroThreads);
@@ -82,41 +86,27 @@ impl PictureBuilder {
 
                     for start in 0..thread_count {
                         thread_vec.push(s.spawn(move || {
-                            let mut t: Vec<Colour> = Vec::with_capacity(length * bounds.1);
-
-                            for i in (start * length)..((start + 1) * length) {
-                                for j in 0..bounds.1 {
-                                    t.push(function(j, i));
-                                }
-                            }
-
-                            t
-                        }));
+                            self.calculate_range( (start*length, (start + 1)*length) ).unwrap()
+                        }))
                     }
 
                     if thread_count*length < bounds.0 {
                         thread_vec.push(s.spawn(move || {
-                            let mut t: Vec<Colour> = Vec::with_capacity(length * bounds.1);
-
-                            for i in (thread_count*length)..(bounds.0) {
-                                for j in 0..bounds.1 {
-                                    t.push(function(j, i));
-                                }
-                            }
-
-                            t
+                            self.calculate_range( (thread_count*length,  bounds.0) ).unwrap()
                         }));
                     }
 
-
-                    temp.pixels = thread_vec
+                    temp = thread_vec
                         .into_iter()
                         .flat_map(|a| a.join().unwrap())
                         .collect::<Vec<_>>()
                 });
 
-                Ok(temp)
+                Ok( Picture{
+                    bounds,
+                    pixels: temp,
+                })
             }
-        }
+    }
     }
 }

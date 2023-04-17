@@ -1,4 +1,4 @@
-use pyo3::{prelude::*, methods::OkWrap};
+use pyo3::{prelude::*, types::PyTuple, exceptions::{PyAttributeError, PyException}};
 use pixie::prelude::*;
 
 #[cfg(test)]
@@ -15,6 +15,7 @@ mod tests {
     }
 }
 
+#[derive(Clone)]
 #[pyclass]
 struct PyxieColour{
     colour: Colour
@@ -37,7 +38,8 @@ struct PyxiePicture{
 
 #[pyclass]
 struct PyxiePictureBuilder{
-    picture_builder: pixie::picture::PictureBuilder
+    bounds: Option<(usize, usize)>,
+    function: Option<Py<PyAny>>
 }
 
 #[pymethods]
@@ -63,37 +65,65 @@ impl PyxiePicture {
 impl PyxiePictureBuilder {
     #[new]
     fn new() -> Self {
-        PyxiePictureBuilder{picture_builder: Picture::build()}
+        PyxiePictureBuilder{
+            bounds: None,
+            function: None
+        }
     }
 
-    pub fn bounds(&mut self, x: usize, y: usize) -> Self {
-        self.picture_builder.bounds = Some((x, y));
-
-        *self
+    pub fn bounds(&mut self, x: usize, y: usize) {
+        self.bounds = Some((x, y));
     }
 
-    pub fn add_fn(&mut self, function: Py<PyAny>) -> Self {
-        self.picture_builder.function = Some(|| function);
-
-        *self
+    pub fn add_fn(&mut self, function: Py<PyAny>) {
+        self.function = Some(function);
     }
 
     pub fn from_fn(&mut self, function: Py<PyAny>) -> PyResult<PyxiePicture> {
-        self.add_fn(function).calculate()
+        self.add_fn(function);
+        self.calculate()
     }
 
-    pub fn from_fn_par(
-        &mut self,
-        function: Py<PyAny>,
-        thread_count: usize,
-    ) -> PyResult<PyxiePicture> {
-        self.add_fn(function).calculate_par(thread_count)
+    fn calculate_range(&self, range: (usize, usize)) -> Vec<PyxieColour> {
+        match (self.bounds, &self.function) {
+            (None, _) => panic!("Bounds Missing"),
+            (_, None) => panic!("Function Missing"),
+            (Some(bounds), Some(function)) => {
+                let mut temp = Vec::with_capacity((range.1 - range.0) * bounds.1);
+
+                for i in range.0..range.1 {
+                    for j in 0..bounds.1 {
+                        let return_val = Python::with_gil(|py|
+                                            function.call1(py, PyTuple::new(py, vec![j, i]))?.extract::<PyxieColour>(py)
+                                            ).unwrap();
+                        temp.push(return_val);
+                    }
+                }
+
+                temp
+            }
+        }
     }
 
     pub fn calculate(&self) -> PyResult<PyxiePicture> {
+        match self.bounds {
+            Some(bounds) => Ok( PyxiePicture{
+                    picture: Picture{
+                        bounds,
+                        pixels: self.calculate_range((0,bounds.0)).iter().map(|x| x.colour).collect::<Vec<_>>(),
+                    }}),
+            None => Err(PyAttributeError::new_err("Bounds Missing"))
+        }
     }
+}
 
-    pub fn calculate_par(&self, thread_count: usize) -> PyResult<PyxiePicture> {
-    }
+#[pymodule]
+fn my_extension(py: Python<'_>, m: &PyModule) -> PyResult<()> {
+    m.add_class::<PyxieColour>()?;
+    m.add_class::<PyxiePicture>()?;
 
+    m.add_function(wrap_pyfunction!(grey, m)?)?;
+    m.add_function(wrap_pyfunction!(rgb, m)?)?;
+
+    Ok(())
 }
