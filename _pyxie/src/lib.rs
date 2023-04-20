@@ -38,11 +38,6 @@ struct PyxiePictureGrey {
 
 #[pymethods]
 impl PyxiePictureGrey {
-    #[new]
-    fn new() -> PyxiePictureGrey {
-        PyxiePictureGrey{ pic: Picture::from_fn(0,0,|_,_| pixie::grey(0)) }
-    }
-
     fn from_fn(&self, w: u32, h: u32, f: Py<PyAny>) -> PyxiePictureGrey {
         PyxiePictureGrey {
             pic: Picture::from_fn(w, h, |x, y| {
@@ -69,11 +64,6 @@ struct PyxiePictureRgb {
 
 #[pymethods]
 impl PyxiePictureRgb {
-    #[new]
-    fn new() -> PyxiePictureRgb {
-        PyxiePictureRgb{ pic: Picture::from_fn(0,0,|_,_| pixie::rgb(0,0,0)) }
-    }
-
     fn from_fn(&self, w: u32, h: u32, f: Py<PyAny>) -> PyxiePictureRgb {
         PyxiePictureRgb {
             pic: Picture::from_fn(w, h, |x, y| {

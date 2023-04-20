@@ -7,6 +7,8 @@ pub use picture_builder::PictureBuilder;
 use image::save_buffer;
 use image::ColorType;
 
+use image::ImageBuffer;
+
 #[derive(Debug)]
 pub struct Picture {
     pub bounds: (usize, usize),

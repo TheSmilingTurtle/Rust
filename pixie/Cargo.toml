@@ -7,4 +7,7 @@ edition = "2021"
 
 [dependencies]
 image = "*"
-rand = "*"
+rayon = "*"
+num = "*"
+rand =  "*"
+crossbeam = "*"
