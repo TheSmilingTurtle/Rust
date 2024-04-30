@@ -134,7 +134,7 @@ where P: Pixel<Subpixel = U> + Send,
 {
     pub fn from_fn_par(w: u32, h: u32, f: &'static (dyn Fn(u32, u32) -> P + Send + Sync), threads: u32) -> Self
     {
-        let thread_count_upper = (w*h) - threads * ( (w*h)/threads );
+        let thread_count_upper = (w*h) - threads * ( (w*h) / threads );
         let chunk_length_lower = ( (w*h)/threads).clamp(1, w*h);
         let chunk_length_upper = chunk_length_lower + 1;
 
