@@ -12,3 +12,4 @@ Cargo.lock
 # directories
 target/
 .env/
+tauri/test
